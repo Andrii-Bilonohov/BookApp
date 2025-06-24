@@ -16,6 +16,33 @@ namespace BookApp.Core.Services
         }
 
 
+        public Task<IEnumerable<AuthorBook>> GetAuthorsByAuthorNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Author name cannot be null or empty.", nameof(name));
+            }
+
+            try
+            {
+                var authorBooks = _authorBookRepository.GetAsync().Result;
+                
+                if (authorBooks == null || !authorBooks.Any())
+                {
+                    _loggerService.LogWarning($"No authors found for name '{name}'");
+                    return Task.FromResult(Enumerable.Empty<AuthorBook>());
+                }
+                return Task.FromResult(authorBooks
+                    .Where(ab => ab.Author != null && ab.Author.Name.Equals(name, StringComparison.OrdinalIgnoreCase)));
+            }
+            catch (Exception ex)
+            {
+                _loggerService.LogError($"Error retrieving authors for name '{name}': {ex.Message}", ex);
+                throw;
+            }
+        }
+
+
         public async Task<IEnumerable<AuthorBook>> GetBooksByAuthorNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))

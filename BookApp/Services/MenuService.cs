@@ -14,7 +14,6 @@ namespace BookApp.Services
         private readonly AuthorServiceApi _authorServiceApi;
         private readonly BookService _bookService;
         private readonly BookContext _context;
-        private readonly AuthorService _authorService;
         private readonly AuthorBookService _authorBookService;
 
 
@@ -24,7 +23,6 @@ namespace BookApp.Services
             _authorServiceApi = new AuthorServiceApi(new HttpClient(), new LoggerService());
             _context = new BookContext();
             _bookService = new BookService(new BookRepository(_context), new LoggerService());
-            _authorService = new AuthorService(new AuthorRepository(_context), new LoggerService());
             _authorBookService = new AuthorBookService(new AuthorBookRepository(_context), new LoggerService());
         }
 
@@ -160,8 +158,6 @@ namespace BookApp.Services
 
         private async Task SortBooksAsync()
         {
-            Console.Clear();
-
             DisplaySortOptions();
             var sortOption = await Validation.GetValiString("Please select a sort option: ");
             await GetBooksByTitleSortedAsync(sortOption);
@@ -170,11 +166,14 @@ namespace BookApp.Services
 
         private async Task GetBooksByTitleSortedAsync(string sortOption)
         {
+            Console.Clear();
+
             var title = await Validation.GetValiString("Please enter the book title: ");
 
             switch (sortOption)
             {
                 case "1":
+
                     Console.WriteLine("Fetching books by title from API...");
                     await GetBooksByTitleSortedApiAsync(b => b.Title, false, title);
 
@@ -337,7 +336,7 @@ namespace BookApp.Services
 
         private async Task GetAuthorByNameWithLocalDataBaseAsync(string authorName)
         {
-            var authors = await _authorService.GetByNameAsync(authorName);
+            var authors = await _authorBookService.GetAuthorsByAuthorNameAsync(authorName);
 
             if (authors == null || !authors.Any())
             {
